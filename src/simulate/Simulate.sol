@@ -65,7 +65,14 @@ contract Simulate is Test, SimulateState {
         uint256 epoch,
         uint256 strikeIndex,
         uint256 amount
-    ) public returns (uint256 purchaseId) {
+    )
+        public
+        returns (
+            uint256 purchaseId,
+            uint256 premium,
+            uint256 purchaseFee
+        )
+    {
         _valueNotZero(amount);
 
         (, uint256 epochExpiry) = ssov.getEpochTimes(epoch);
@@ -74,30 +81,11 @@ contract Simulate is Test, SimulateState {
         uint256 strike = ssov.getEpochData(epoch).strikes[strikeIndex];
         _valueNotZero(strike);
 
-        // Check if vault has enough collateral to write the options
-        //        uint256 availableCollateral = ssov
-        //            .getEpochStrikeData(epoch, strike)
-        //            .totalCollateral -
-        //            ssov.getEpochStrikeData(epoch, strike).activeCollateral;
-        //
-        //        uint256 requiredCollateral = ssov.isPut()
-        //            ? (amount *
-        //                strike *
-        //                ssov.collateralPrecision() *
-        //                ssov.getEpochData(epoch).collateralExchangeRate) /
-        //                (OPTIONS_PRECISION * DEFAULT_PRECISION * DEFAULT_PRECISION)
-        //            : (amount *
-        //                ssov.getEpochData(epoch).collateralExchangeRate *
-        //                ssov.collateralPrecision()) /
-        //                (DEFAULT_PRECISION * OPTIONS_PRECISION);
-        //
-        //        _validate(requiredCollateral < availableCollateral, 6);
-
         // Get total premium for all options being purchased
-        uint256 premium = _calculatePremium(ssov, epoch, strike, amount);
+        premium = _calculatePremium(ssov, epoch, strike, amount);
 
         // Total fee charged
-        uint256 totalFee = _calculatePurchaseFees(ssov, strike, amount);
+        purchaseFee = _calculatePurchaseFees(ssov, strike, amount);
 
         purchaseId = getPurchaseId();
 
@@ -106,7 +94,7 @@ contract Simulate is Test, SimulateState {
             strike: strike,
             amount: amount,
             premium: premium,
-            totalFee: totalFee
+            purchaseFee: purchaseFee
         });
     }
 
@@ -146,12 +134,12 @@ contract Simulate is Test, SimulateState {
         );
 
         // Total fee charged
-        uint256 totalFee = _calculateSettlementFees(ssov, pnl);
+        uint256 settlementFee = _calculateSettlementFees(ssov, pnl);
 
         if (pnl == 0) {
             netPnl = 0;
         } else {
-            netPnl = pnl - totalFee;
+            netPnl = pnl - settlementFee;
         }
     }
 
@@ -553,7 +541,7 @@ contract Simulate is Test, SimulateState {
             uint256 strike,
             uint256 amount,
             uint256 premium,
-            uint256 totalFee
+            uint256 purchaseFee
         )
     {
         PurchasePosition memory _purchasePosition = purchasePositions[
@@ -565,7 +553,7 @@ contract Simulate is Test, SimulateState {
             _purchasePosition.strike,
             _purchasePosition.amount,
             _purchasePosition.premium,
-            _purchasePosition.totalFee
+            _purchasePosition.purchaseFee
         );
     }
 

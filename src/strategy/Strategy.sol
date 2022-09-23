@@ -113,13 +113,22 @@ contract Strategy is Test {
     }
 
     /// @dev queued purchases from this contract -> sim purchase in Simulate.
-    function executePurchases() public returns (uint256[] memory purchaseIds) {
+    function executePurchases()
+        public
+        returns (
+            uint256[] memory purchaseIds,
+            uint256[] memory premiums,
+            uint256[] memory purchaseFees
+        )
+    {
         purchaseIds = new uint256[](purchases[epoch].length);
+        premiums = new uint256[](purchases[epoch].length);
+        purchaseFees = new uint256[](purchases[epoch].length);
 
         for (uint256 i = 0; i < purchases[epoch].length; ++i) {
             setupForkBlockSpecified(purchases[epoch][i].blockNumber);
 
-            uint256 id = ISim(sim).purchase(
+            (uint256 id, uint256 prem, uint256 fee) = ISim(sim).purchase(
                 ISsovV3(ssov),
                 epoch,
                 purchases[epoch][i].strikeIndex,
@@ -127,6 +136,8 @@ contract Strategy is Test {
             );
 
             purchaseIds[i] = id;
+            premiums[i] = prem;
+            purchaseFees[i] = fee;
         }
     }
 

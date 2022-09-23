@@ -16,7 +16,13 @@ interface ISim {
         uint256 epoch,
         uint256 strikeIndex,
         uint256 amount
-    ) external returns (uint256 purchaseId);
+    )
+        external
+        returns (
+            uint256 purchaseId,
+            uint256 premium,
+            uint256 purchaseFee
+        );
 
     function settle(
         ISsovV3 ssov,

@@ -21,6 +21,6 @@ contract SimulateState {
         uint256 strike;
         uint256 amount;
         uint256 premium;
-        uint256 totalFee;
+        uint256 purchaseFee;
     }
 }

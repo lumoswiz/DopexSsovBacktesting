@@ -76,6 +76,8 @@ contract StrategyTest is Test {
             "DepositArrayLengthsNotEqual"
         );
 
+        // PURCHASE -> SETTLE LOGIC
+
         if (purchaseBlockNumbers.length != 0) {
             purchaseCollateralChecker();
 
@@ -85,12 +87,20 @@ contract StrategyTest is Test {
                 purchaseAmounts
             );
 
-            uint256[] memory purchaseIds = strat.executePurchases();
+            (
+                uint256[] memory purchaseIds,
+                uint256[] memory premiums,
+                uint256[] memory purchaseFees
+            ) = strat.executePurchases();
 
             uint256[] memory netPnls = strat.executeSettle(purchaseIds);
 
             emit log_named_array("netPnls", netPnls);
+            emit log_named_array("premiums", premiums);
+            emit log_named_array("purchaseFees", purchaseFees);
         }
+
+        // DEPOSIT -> WITHDRAW LOGIC
 
         if (depositBlockNumbers.length != 0) {
             strat.createDeposits(
