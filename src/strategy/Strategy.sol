@@ -189,6 +189,20 @@ contract Strategy is Test {
         assertEq(vm.activeFork(), id);
     }
 
+    function returnWithdrawDetails(uint256 depositId)
+        public
+        view
+        returns (
+            uint256 collateralTokenWithdrawAmount,
+            uint256[] memory rewardTokenWithdrawAmounts
+        )
+    {
+        collateralTokenWithdrawAmount = withdraws[depositId]
+            .collateralTokenWithdrawAmount;
+        rewardTokenWithdrawAmounts = withdraws[depositId]
+            .rewardTokenWithdrawAmounts;
+    }
+
     function logWithdraws(uint256 depositId) public {
         emit log_named_uint(
             "collateralTokenWithdrawAmount",
@@ -242,14 +256,4 @@ contract Strategy is Test {
             "*******************************************************************************"
         );
     }
-
-    function _validate(bool _condition, uint256 _errorCode) private pure {
-        if (!_condition) revert SsovV3Error(_errorCode);
-    }
 }
-
-error SsovV3Error(uint256);
-
-/*==== ERROR CODE MAPPING ====*/
-// 6 - required collateral must be lesser than the available collateral. Action: run `testOptionsAvailableForPurchase()` in
-//     in StrategyTest.t.sol. In CL run: forge test --match-test testOptionsAvailableForPurchase -vvv

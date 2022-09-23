@@ -58,6 +58,9 @@ contract StrategyTest is Test {
     //     User inputs SSOV strategy (desired deposits or purchases during an epoch for given block numbers, strike indexes and amounts).
     //     `testStrategy()` then simulates an approximate performance of this strategy based on past SSOV epochs (forked Arbitrum state).
 
+    //     If the desired purchase amount in `purchaseAmounts` for the given block number & strike index exceeds the available collateral,
+    //     the purchase amount will be adjusted to the available amount (emits a log when this occurs).
+
     // To run in CL:
     //     forge test --match-test testStrategy -vvv
 
@@ -112,19 +115,134 @@ contract StrategyTest is Test {
             uint256[] memory depositIds = strat.executeDeposits();
 
             strat.executeWithdraw(depositIds);
-            emit log_string(
-                "*******************************************************************************"
+
+            depositSummary(depositIds);
+        }
+    }
+
+    function testDW() public {
+        require(
+            ((depositBlockNumbers.length == depositStrikeIndexes.length) &&
+                (depositBlockNumbers.length == depositAmounts.length)),
+            "DepositArrayLengthsNotEqual"
+        );
+
+        if (depositBlockNumbers.length != 0) {
+            strat.createDeposits(
+                depositBlockNumbers,
+                depositStrikeIndexes,
+                depositAmounts
             );
-            for (uint256 i; i < depositStrikeIndexes.length; ++i) {
-                emit log_named_uint(
-                    "depositStrikeIndex",
-                    depositStrikeIndexes[i]
-                );
-                strat.logWithdraws(depositIds[i]);
-                emit log_string(
-                    "*******************************************************************************"
+
+            uint256[] memory depositIds = strat.executeDeposits();
+
+            strat.executeWithdraw(depositIds);
+
+            depositSummary(depositIds);
+        }
+    }
+
+    function depositSummary(uint256[] memory depositIds) public {
+        emit log_string("##################### DEPOSITS #####################");
+        emit log_string(" ");
+
+        for (uint256 i; i < depositBlockNumbers.length; ++i) {
+            emit log_string(concatenate("INDEX ", Strings.toString(i)));
+            emit log_string(
+                "===================================================="
+            );
+
+            emit log_named_string(
+                "block number",
+                Strings.toString(depositBlockNumbers[i])
+            );
+
+            emit log_named_string(
+                "strike index",
+                Strings.toString(depositStrikeIndexes[i])
+            );
+
+            emit log_named_string(
+                "strike",
+                Strings.toString(
+                    ISsovV3(ssov).getEpochData(epoch).strikes[
+                        depositStrikeIndexes[i]
+                    ]
+                )
+            );
+
+            emit log_named_string(
+                "amount",
+                Strings.toString(depositAmounts[i])
+            );
+
+            emit log_string(
+                "****************************************************"
+            );
+
+            (
+                uint256 collateralTokenWithdrawAmount,
+                uint256[] memory rewardTokenWithdrawAmounts
+            ) = strat.returnWithdrawDetails(depositIds[i]);
+
+            emit log_named_string(
+                "collateralTokenWithdrawAmount",
+                Strings.toString(collateralTokenWithdrawAmount)
+            );
+
+            for (uint256 x; x < rewardTokenWithdrawAmounts.length; ++x) {
+                string memory symbol = IERC20(
+                    ISsovV3(ssov).getEpochData(epoch).rewardTokensToDistribute[
+                        x
+                    ]
+                ).symbol();
+                emit log_named_string(
+                    concatenate("reward token ", symbol),
+                    Strings.toString(rewardTokenWithdrawAmounts[x])
                 );
             }
+
+            emit log_named_int(
+                "dpx return (units)",
+                int256(collateralTokenWithdrawAmount) -
+                    int256(depositAmounts[i]) +
+                    int256(rewardTokenWithdrawAmounts[0])
+            );
+
+            emit log_string(" ");
+        }
+    }
+
+    function summarisePurchaseInputs() public {
+        emit log_string("PURCHASES");
+        emit log_string("=========");
+
+        for (uint256 i; i < purchaseBlockNumbers.length; ++i) {
+            emit log_named_string(
+                "block number",
+                Strings.toString(purchaseBlockNumbers[i])
+            );
+
+            emit log_named_string(
+                "strike index",
+                Strings.toString(purchaseStrikeIndexes[i])
+            );
+
+            emit log_named_string(
+                "strike",
+                Strings.toString(
+                    ISsovV3(ssov).getEpochData(epoch).strikes[
+                        purchaseStrikeIndexes[i]
+                    ]
+                )
+            );
+
+            emit log_named_string(
+                "amount",
+                Strings.toString(purchaseAmounts[i])
+            );
+
+            emit log_string("*********");
         }
     }
 
