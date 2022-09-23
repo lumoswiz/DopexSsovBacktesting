@@ -31,22 +31,24 @@ contract StrategyTest is Test {
     uint256[] public purchaseAmounts;
 
     function setUp() public {
-        // Select the SSOV V3 and epoch to test.
-        // Testing has only been conducted for DPX WEEKLY CALLS SSOV V3 so far.
-        ssov = 0x10FD85ec522C245a63239b9FC64434F58520bd1f; // WEEKLY DPX CALLS
-        epoch = 1;
-
         // Deploying contracts to Arbitrum fork & setting their state as persistent.
         setupFork();
         deploySimulateAndStrategy();
 
-        // USER INPUT REQUIRED - LENGTHS OF EACH ARRAY TYPE (DEPOSIT OR PURCHASE) MUST MATCH.
-        // EXAMPLE:
-        //     length depositBlockNumbers = length depositStrikeIndexes = length depositAmounts.
+        /*=== USER INPUT REQUIRED ===*/
+
+        // Select the SSOV V3 and epoch to test.
+        ssov = 0x10FD85ec522C245a63239b9FC64434F58520bd1f; // WEEKLY DPX CALLS
+
+        // Choose an epoch to test
+        epoch = 1;
+
+        // Input deposit parameters: block number, strike index and amount
         depositBlockNumbers = [22947245, 22967245];
         depositStrikeIndexes = [0, 1];
         depositAmounts = [5e18, 5e18];
 
+        // Input purchase parameters: block number, strike index and amount
         purchaseBlockNumbers = [22964131, 23319117];
         purchaseStrikeIndexes = [0, 0];
         purchaseAmounts = [4e18, 20e18];
@@ -84,6 +86,9 @@ contract StrategyTest is Test {
         if (purchaseBlockNumbers.length != 0) {
             purchaseCollateralChecker();
 
+            emit log_string(" ");
+            emit log_string(" ");
+
             strat.createPurchases(
                 purchaseBlockNumbers,
                 purchaseStrikeIndexes,
@@ -98,10 +103,11 @@ contract StrategyTest is Test {
 
             uint256[] memory netPnls = strat.executeSettle(purchaseIds);
 
-            emit log_named_array("netPnls", netPnls);
-            emit log_named_array("premiums", premiums);
-            emit log_named_array("purchaseFees", purchaseFees);
+            purchaseSummary(netPnls, premiums, purchaseFees);
         }
+
+        emit log_string(" ");
+        emit log_string(" ");
 
         // DEPOSIT -> WITHDRAW LOGIC
 
@@ -120,25 +126,59 @@ contract StrategyTest is Test {
         }
     }
 
-    function testDW() public {
-        require(
-            ((depositBlockNumbers.length == depositStrikeIndexes.length) &&
-                (depositBlockNumbers.length == depositAmounts.length)),
-            "DepositArrayLengthsNotEqual"
+    /*=== SUMARRY FUNCTIONS ===*/
+    function purchaseSummary(
+        uint256[] memory netPnls,
+        uint256[] memory premiums,
+        uint256[] memory purchaseFees
+    ) public {
+        emit log_string(
+            "##################### PURCHASES #####################"
         );
+        emit log_string(" ");
 
-        if (depositBlockNumbers.length != 0) {
-            strat.createDeposits(
-                depositBlockNumbers,
-                depositStrikeIndexes,
-                depositAmounts
+        for (uint256 i; i < purchaseBlockNumbers.length; ++i) {
+            emit log_string(concatenate("INDEX ", Strings.toString(i)));
+            emit log_string(
+                "===================================================="
             );
 
-            uint256[] memory depositIds = strat.executeDeposits();
+            emit log_named_string(
+                "block number",
+                Strings.toString(purchaseBlockNumbers[i])
+            );
 
-            strat.executeWithdraw(depositIds);
+            emit log_named_string(
+                "strike index",
+                Strings.toString(purchaseStrikeIndexes[i])
+            );
 
-            depositSummary(depositIds);
+            emit log_named_string(
+                "strike",
+                Strings.toString(
+                    ISsovV3(ssov).getEpochData(epoch).strikes[
+                        purchaseStrikeIndexes[i]
+                    ]
+                )
+            );
+
+            emit log_named_string(
+                "amount",
+                Strings.toString(purchaseAmounts[i])
+            );
+
+            emit log_string(
+                "****************************************************"
+            );
+
+            emit log_named_int(
+                "dpx net pnl (units)",
+                int256(netPnls[i]) -
+                    int256(premiums[i]) -
+                    int256(purchaseFees[i])
+            );
+
+            emit log_string(" ");
         }
     }
 
@@ -203,7 +243,7 @@ contract StrategyTest is Test {
             }
 
             emit log_named_int(
-                "dpx return (units)",
+                "net dpx return (units)",
                 int256(collateralTokenWithdrawAmount) -
                     int256(depositAmounts[i]) +
                     int256(rewardTokenWithdrawAmounts[0])
@@ -213,40 +253,7 @@ contract StrategyTest is Test {
         }
     }
 
-    function summarisePurchaseInputs() public {
-        emit log_string("PURCHASES");
-        emit log_string("=========");
-
-        for (uint256 i; i < purchaseBlockNumbers.length; ++i) {
-            emit log_named_string(
-                "block number",
-                Strings.toString(purchaseBlockNumbers[i])
-            );
-
-            emit log_named_string(
-                "strike index",
-                Strings.toString(purchaseStrikeIndexes[i])
-            );
-
-            emit log_named_string(
-                "strike",
-                Strings.toString(
-                    ISsovV3(ssov).getEpochData(epoch).strikes[
-                        purchaseStrikeIndexes[i]
-                    ]
-                )
-            );
-
-            emit log_named_string(
-                "amount",
-                Strings.toString(purchaseAmounts[i])
-            );
-
-            emit log_string("*********");
-        }
-    }
-
-    /*=== FUNCTION TO ASSIST WITH PURCHASE AMOUNTS ===*/
+    /*=== CHECK OPTIONS AVAILABLE FOR PURCHASE ===*/
 
     // To run in CL:
     //     forge test --match-test testOptionsAvailableForPurchase -vvv
