@@ -1,6 +1,6 @@
 # SSOV V3 Backtesting
 
-** Dopex SSOV backtesting built with Foundry for Arbitrum fork testing of SSOV V3 contracts.**
+**Dopex SSOV backtesting built with Foundry for Arbitrum fork testing of SSOV V3 contracts.**
 
 ## Setup
 
@@ -14,7 +14,8 @@
 
   - `ssov`: contract address of the SSOV V3 to run backtests against. _NOTE: I have only currently run backtests against DPX WEEKLY CALLS SSOV V3_.
   - `epoch`: the **_expired_** epoch to run backtests against.
-  - Deposit parameters (`depositBlockNumbers`, `depositStrikeIndexes` and `depositAmounts`): - Contracts require the block number, strike index and amount to deposit. To deposit 1 DPX (_1e18 precision_) at strike index 2 and block number 22962396 then the deposit parameter arrays will look like:
+  - Deposit parameters (`depositBlockNumbers`, `depositStrikeIndexes` and `depositAmounts`):
+    - Contracts require the block number, strike index and amount to deposit. To deposit 1 DPX (_1e18 precision_) at strike index 2 and block number 22962396 then the deposit parameter arrays will look like:
     ```sh
     depositBlockNumbers = [22962396];
     depositStrikeIndexes = [2];
@@ -31,13 +32,27 @@
   purchaseAmounts = [10e18, 2e18];
   ```
 
-- _NOTE_: if the desired purchase amount/s exceed the available collateral for the given parameters, the purchase amount will be adjusted to the available collateral and a log will be emitted to indicate this.
+  - _NOTE_: if the desired purchase amount/s exceed the available collateral for the given parameters, the purchase amount will be adjusted to the available collateral and a log will be emitted to indicate this.
+
+- If the user wants to run only deposits or purchases, comment out the lines containing the arrays of the other type. Example: only deposits to be backtested, then the purchase array lines will look like:
+
+```sh
+// purchaseBlockNumbers = [];
+// purchaseStrikeIndexes = [];
+// purchaseAmounts = [];
+```
 
 - **Testing**:
-  - When parameters are input, in command line run:
+
+  - When parameters are input, in the command line run:
+
   ```sh
   forge test --match-test testStrategy -vvv
   ```
+
+  - When the test has completed running, logs will be emitted for the corresponding deposits and/or purchases.
+    - For deposits: `collateralTokenWithdrawAmount`, reward token amounts and the net DPX return (in units) are summarised.
+    - For purchases: the dpx net pnl (in units) is summarised, accounting for purchase fees, premium and settlement fees.
 
 ## Backtests vs. actual performance
 
@@ -45,11 +60,3 @@
 
 - [Foundry](https://github.com/foundry-rs/foundry). Refer to the [book](https://book.getfoundry.sh/getting-started/installation.html).
 - Dopex
-
-```
-
-```
-
-```
-
-```
