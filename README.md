@@ -77,7 +77,7 @@ purchaseAmounts = [1e18, 6e18, 6e18];
 ## Bugs/Help
 
 - For any help, feedback, or questions please feel free to reach out to me on [Twitter](https://twitter.com/lumoswiz).
-- So far I have only tested DPX weekly (V3 contracts) for epoch 1. I hope to test more SSOV's/epoch combinations soon, so stay tuned.
+- So far I have only tested DPX weekly (V3 contracts) for epoch 1. I hope to test more SSOV/epoch combinations soon, so stay tuned.
 
 ## Acknowledgements
 
