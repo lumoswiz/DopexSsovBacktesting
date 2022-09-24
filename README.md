@@ -56,16 +56,21 @@
 
 ## Backtests vs. actual performance
 
-| Type             | BN/SI/A           |
-| ---------------- | ----------------- |
-| deposit/withdraw | 22962396/3/7.782  |
-| deposit/withdraw | 23020472/2/11.427 |
-| deposit/withdraw | 23244639/1/0.15   |
+- Tested actual deposits and purchases duing epoch 1 for DPX WEEKLY CALLS SSOV V3. Near 100% accuracy (simulation/real) achieved for `collateralTokenWithdrawAmount`, `rewardTokenAmounts` (both DPX and JONES) and net pnl. Inputs tested summarised below:
 
-| Type            | BN/SI/A       | Net pnl (real) | Net pnl (sim) |
-| --------------- | ------------- | -------------- | ------------- |
-| purchase/settle | 23165794/2/10 | -0.0807        | -0.0807       |
-| purchase/settle | 23377592/0/6  | 0.1572         | 0.1572        |
+```sh
+ssov = 0x10FD85ec522C245a63239b9FC64434F58520bd1f;
+
+epoch = 1;
+
+depositBlockNumbers = [22962396, 23020472, 23244639];
+depositStrikeIndexes = [3, 2, 1];
+depositAmounts = [7.782e18, 11.427e18, 0.15e18];
+
+purchaseBlockNumbers = [23165341, 23377592, 23402497];
+purchaseStrikeIndexes = [0, 0, 0];
+purchaseAmounts = [1e18, 6e18, 6e18];
+```
 
 ## Acknowledgements
 
