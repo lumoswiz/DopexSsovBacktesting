@@ -31,10 +31,6 @@ contract StrategyTest is Test {
     uint256[] public purchaseAmounts;
 
     function setUp() public {
-        // Deploying contracts to Arbitrum fork & setting their state as persistent.
-        setupFork();
-        deploySimulateAndStrategy();
-
         /*=== USER INPUT REQUIRED ===*/
 
         // Select the SSOV V3 and epoch to test.
@@ -44,14 +40,20 @@ contract StrategyTest is Test {
         epoch = 1;
 
         // Input deposit parameters: block number, strike index and amount
-        depositBlockNumbers = [22947245, 22967245];
-        depositStrikeIndexes = [0, 1];
-        depositAmounts = [5e18, 5e18];
+        depositBlockNumbers = [22962396, 23020472, 23244639];
+        depositStrikeIndexes = [3, 2, 1];
+        depositAmounts = [7.782e18, 11.427e18, 0.15e18];
 
         // Input purchase parameters: block number, strike index and amount
-        purchaseBlockNumbers = [22964131, 23319117];
-        purchaseStrikeIndexes = [0, 0];
-        purchaseAmounts = [4e18, 20e18];
+        purchaseBlockNumbers = [23165341, 23377592, 23402497];
+        purchaseStrikeIndexes = [0, 0, 0];
+        purchaseAmounts = [1e18, 6e18, 6e18];
+
+        /* === END USER INPUT ===*/
+
+        // Deploying contracts to Arbitrum fork & setting their state as persistent.
+        setupFork();
+        deploySimulateAndStrategy();
     }
 
     /*=== STRATEGY BACKTEST ===*/
