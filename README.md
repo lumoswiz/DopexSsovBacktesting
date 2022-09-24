@@ -56,7 +56,18 @@
 
 ## Backtests vs. actual performance
 
+| Type             | BN/SI/A           |
+| ---------------- | ----------------- |
+| deposit/withdraw | 22962396/3/7.782  |
+| deposit/withdraw | 23020472/2/11.427 |
+| deposit/withdraw | 23244639/1/0.15   |
+
+| Type            | BN/SI/A       | Net pnl (real) | Net pnl (sim) |
+| --------------- | ------------- | -------------- | ------------- |
+| purchase/settle | 23165794/2/10 | -0.0807        | -0.0807       |
+| purchase/settle | 23377592/0/6  | 0.1572         | 0.1572        |
+
 ## Acknowledgements
 
+- Thanks to [Dopex](https://www.dopex.io/) for inspiring this personal project. Reading through your contracts has helped me improve my comfortability with Solidity and pushed me to improve my working knowledge of Foundry (such as fork testing and using the [StdStorage](https://book.getfoundry.sh/reference/forge-std/std-storage) library).
 - [Foundry](https://github.com/foundry-rs/foundry). Refer to the [book](https://book.getfoundry.sh/getting-started/installation.html).
-- Dopex
